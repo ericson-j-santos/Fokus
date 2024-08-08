@@ -1,4 +1,8 @@
 
+
+
+
+// --------------
 // // 1) Capturando elementos com JavaScript
 
 // // Você está trabalhando no projeto Fokus, um aplicativo de cronômetro, onde será possível clicar no botão “Iniciar”, para iniciar e pausar um cronômetro.Para realizar o passo a passo, seu primeiro objetivo é implementar métodos do JavaScript que permitam selecionar os seguintes elementos do HTML:
