@@ -4,9 +4,11 @@ const formAdicionarTarefa = document.querySelector('.app__form-add-task') // Sel
 const textArea = document.querySelector('.app__form-textarea') // Selecionar o textarea do formulário para adicionar tarefas
 const ulTarefas = document.querySelector('.app__section-task-list')  // Selecionar a lista de tarefas (ul) para adicionar as tarefas
 const paragrafoDescricaoTarefa = document.querySelector('.app__section-active-task-description') // Selecionar o parágrafo para exibir a descrição da tarefa ativa
+
 const btnRemoverConcluidas = document.querySelector('#btn-remover-concluidas') // Selecionar o botão para remover tarefas concluídas
-// Selecione o botão de Cancelar que adicionamos ao formulário
-//const btnCancelar = document.querySelector('app__form-footer__button--cancel')
+const btnRemoverTodas = document.querySelector('#btn-remover-todas') // Selecionar o botão para remover todas as tarefas 
+
+
 
 //O parse() é o inverso do stringify(): pega a string e se ela for um JSON formatado, ele vai conseguir transformar isso.Se houver uma string problemática ou algo fora do lugar, teremos erro no console indicando que com isso ele não sabe lidar.Mas nesse cenário, como fizemos um stringify() e estamos fazendo parse(), provavelmente, não precisamos nos preocupar. Então, o JSON.parse() vai transformar isso.Porém, imagine que foi a primeira vez que uma pessoa carregou o Fokus.Não tem nada no localStorage.Então, podemos fazer uma programação defensiva. Se, por algum motivo, o localStorage retornou nulo, o nulo não vai quebrar o JSON.parse(), mas não teremos um array para fazer push().Então, o que fazemos ? Se o retorno for algo que não é um array, ou seja, se for um undefined ou um null, vamos fazer um "ou"(||) e colocar um array vazio.
 // const tarefas = []
@@ -14,11 +16,10 @@ let tarefas = JSON.parse(localStorage.getItem('tarefas')) || [] // Recuperar as 
 let tarefaSelecionada = null // Inicializar a tarefa selecionada como nula (nenhuma tarefa selecionada)
 let liTarefaSelecionada = null  // Inicializar o elemento da tarefa selecionada como nulo (nenhum elemento de tarefa selecionado)
 
-// Crie uma função para limpar o conteúdo do textarea e esconder o formulário
-const limparFormulario = () => {
-    textArea.value = ''; // Limpe o conteúdo do textarea
-    formAdicionarTarefa.classList.add('hidden');  // Adicione a classe 'hidden' ao formulário para escondê-lo
-}
+// const limparFormulario = () => { // Crie uma função chamada limparFormulario
+//     textArea.value = ''; // Limpe o conteúdo do textarea
+//     formAdicionarTarefa.classList.add('hidden');  // Adicione a classe 'hidden' ao formulário para escondê-lo
+// }
 
 // Associe a função limparFormulario ao evento de clique do botão Cancelar
 //btnCancelar.addEventListener('click', limparFormulario)
@@ -98,9 +99,9 @@ function criarElementoTarefa(tarefa) {
 
     const imagemBotao = document.createElement('img') // Criar elemento de imagem para o botão de edição da tarefa
     imagemBotao.setAttribute('src', '/imagens/edit.png') // Definir o atributo src da imagem do botão de edição da tarefa como a imagem edit.png 
-
     // Agora que criamos todos os elementos, precisamos encaixá-los uns nos outros. A primeira coisa que faremos será chamar botao.append(imagemBotao).
     botao.append(imagemBotao) // Adicionar a imagem do botão de edição da tarefa ao botão de edição da tarefa
+
     // Por último, vamos chamar o li e adicionar cada elemento que criamos nas constantes.Dessa forma, teremos li.append(svg), li.append(p), e li.append(botao).
     li.append(svg) // Adicionar o svg ao elemento da tarefa
     li.append(paragrafo) // Adicionar o parágrafo ao elemento da tarefa
@@ -171,11 +172,20 @@ document.addEventListener('FocoFinalizado', () => { // Adicionar um evento de cl
     }
 })
 
-btnRemoverConcluidas.onclick = () => {
-    const seletor = ".app__section-task-list-item-complete"
-    document.querySelectorAll(seletor).forEach(elemento => {
-        elemento.remove()
+const removerTarefas = (somenteCompletas) => {
+    debugger
+    // Adicionar um evento de clique ao botão para remover tarefas concluídas
+    //const seletor = visible ?? ".app__section-task-list-item-complete" : ".app_section-task-list-item" // Se somenteCompletas for verdadeiro, selecionar todos os elementos de tarefas concluídas, senão, selecionar todos os elementos de tarefas concluídas
+    let seletor = ".app__section-task-list-item" // Inicializar o seletor com a classe de todos os elementos de tarefas 
+    if (somenteCompletas) { // Se somenteCompletas for verdadeiro
+        seletor = ".app__section-task-list-item-complete" // Selecionar todos os elementos de tarefas concluídas 
+    }
+    document.querySelectorAll(seletor).forEach(elemento => { // Selecionar todos os elementos de tarefas concluídas e para cada elemento, executar a função
+        elemento.remove() // Remover o elemento da tarefa concluída
     })
-    tarefas = tarefas.filter(tarefa => !tarefa.completa)
-    atualizarTarefas()
+    tarefas = somenteCompletas ? tarefas.filter(tarefa => !tarefa.completa) : [] // Se somenteCompletas for verdadeiro, filtrar as tarefas para manter apenas as tarefas não concluídas, senão, criar um array vazio
+    atualizarTarefas()  // Atualizar as tarefas no localStorage
 }
+
+btnRemoverConcluidas.onClick = () => removerTarefas(true)  //  Adicionar um evento de clique ao botão para remover tarefas concluídas, sem executar a função removerTarefas apenas passando a referência da função para acontecer somente quando o botão for clicado, se não colocar o () a função será executada imediatamente; 
+btnRemoverTodas.onClick = () => removerTarefas(false) // Adicionar um evento de clique ao botão para remover todas as tarefas, sem executar a função removerTarefas apenas passando a referência da função para acontecer somente quando o botão for clicado, se não colocar o () a função será executada imediatamente;
