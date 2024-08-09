@@ -4,13 +4,15 @@ const formAdicionarTarefa = document.querySelector('.app__form-add-task') // Sel
 const textArea = document.querySelector('.app__form-textarea') // Selecionar o textarea do formulário para adicionar tarefas
 const ulTarefas = document.querySelector('.app__section-task-list')  // Selecionar a lista de tarefas (ul) para adicionar as tarefas
 const paragrafoDescricaoTarefa = document.querySelector('.app__section-active-task-description') // Selecionar o parágrafo para exibir a descrição da tarefa ativa
+const btnRemoverConcluidas = document.querySelector('#btn-remover-concluidas') // Selecionar o botão para remover tarefas concluídas
 // Selecione o botão de Cancelar que adicionamos ao formulário
 //const btnCancelar = document.querySelector('app__form-footer__button--cancel')
 
 //O parse() é o inverso do stringify(): pega a string e se ela for um JSON formatado, ele vai conseguir transformar isso.Se houver uma string problemática ou algo fora do lugar, teremos erro no console indicando que com isso ele não sabe lidar.Mas nesse cenário, como fizemos um stringify() e estamos fazendo parse(), provavelmente, não precisamos nos preocupar. Então, o JSON.parse() vai transformar isso.Porém, imagine que foi a primeira vez que uma pessoa carregou o Fokus.Não tem nada no localStorage.Então, podemos fazer uma programação defensiva. Se, por algum motivo, o localStorage retornou nulo, o nulo não vai quebrar o JSON.parse(), mas não teremos um array para fazer push().Então, o que fazemos ? Se o retorno for algo que não é um array, ou seja, se for um undefined ou um null, vamos fazer um "ou"(||) e colocar um array vazio.
 // const tarefas = []
-const tarefas = JSON.parse(localStorage.getItem('tarefas')) || [] // Recuperar as tarefas do localStorage ou criar um array vazio se não houver tarefas no localStorage 
-let tarefaSelecionada = null // Inicializar a tarefa selecionada como nula (nenhuma tarefa selecionada) 
+let tarefas = JSON.parse(localStorage.getItem('tarefas')) || [] // Recuperar as tarefas do localStorage ou criar um array vazio se não houver tarefas no localStorage  
+let tarefaSelecionada = null // Inicializar a tarefa selecionada como nula (nenhuma tarefa selecionada)
+let liTarefaSelecionada = null  // Inicializar o elemento da tarefa selecionada como nulo (nenhum elemento de tarefa selecionado)
 
 // Crie uma função para limpar o conteúdo do textarea e esconder o formulário
 const limparFormulario = () => {
@@ -102,23 +104,30 @@ function criarElementoTarefa(tarefa) {
     // Por último, vamos chamar o li e adicionar cada elemento que criamos nas constantes.Dessa forma, teremos li.append(svg), li.append(p), e li.append(botao).
     li.append(svg) // Adicionar o svg ao elemento da tarefa
     li.append(paragrafo) // Adicionar o parágrafo ao elemento da tarefa
-    li.append(botao) // Adicionar o botão de edição ao elemento da tarefa 
+    li.append(botao) // Adicionar o botão de edição ao elemento da tarefa
 
-    li.onclick = () => { // Adicionar evento de clique ao elemento da tarefa
-        document.querySelectorAll('.app__section-task-list-item-active') // Selecionar todos os elementos com a classe 'app__section-task-list-item-active'
-            .forEach(elemento => { // Para cada elemento, executar a função
-                elemento.classList.remove('app__section-task-list-item-active') // Remover a classe 'app__section-task-list-item-active' do elemento
-            }) // Encerrar a execução da função
-        if (tarefaSelecionada == tarefa) { // Se a tarefa selecionada for a mesma que a tarefa clicada
-            paragrafoDescricaoTarefa.textContent = '' // Limpar a descrição da tarefa
-            tarefaSelecionada = null // Deselecionar tarefa clicada
-            return // Encerrar a execução da função para não selecionar a tarefa clicada
+    if (tarefa.completa) { // Se a tarefa estiver marcada como completa
+        li.classList.add('app__section-task-list-complete') // Adicionar a classe 'app__section-task-list-complete' ao elemento da tarefa para destacá-la visualmente na lista de tarefas
+        botao.setAttribute('disabled', 'disabled') // Desabilitar o botão de edição da tarefa
+    } else {
+        li.onclick = () => { // Adicionar evento de clique ao elemento da tarefa
+            document.querySelectorAll('.app__section-task-list-item-active') // Selecionar todos os elementos com a classe 'app__section-task-list-item-active'
+                .forEach(elemento => { // Para cada elemento, executar a função
+                    elemento.classList.remove('app__section-task-list-item-active') // Remover a classe 'app__section-task-list-item-active' do elemento
+                }) // Encerrar a execução da função
+            if (tarefaSelecionada == tarefa) { // Se a tarefa selecionada for a mesma que a tarefa clicada
+                paragrafoDescricaoTarefa.textContent = '' // Limpar a descrição da tarefa
+                tarefaSelecionada = null // Deselecionar tarefa clicada
+                liTarefaSelecionada = null // Deselecionar elemento da tarefa clicada 
+                return // Encerrar a execução da função para não selecionar a tarefa clicada
 
+            }
+            tarefaSelecionada = tarefa // Selecionar tarefa clicada
+            liTarefaSelecionada = li // Selecionar elemento da tarefa clicada 
+            paragrafoDescricaoTarefa.textContent = tarefa.descricao // Exibir descrição da tarefa clicada no parágrafo de descrição da tarefa ativa (paragrafoDescricaoTarefa)  
+
+            li.classList.add('app__section-task-list-item-active') // Adicionar a classe 'app__section-task-list-item-active' ao elemento da tarefa clicada para destacá-la visualmente na lista de tarefas 
         }
-        tarefaSelecionada = tarefa // Selecionar tarefa clicada
-        paragrafoDescricaoTarefa.textContent = tarefa.descricao // Exibir descrição da tarefa clicada no parágrafo de descrição da tarefa ativa (paragrafoDescricaoTarefa)  
-
-        li.classList.add('app__section-task-list-item-active') // Adicionar a classe 'app__section-task-list-item-active' ao elemento da tarefa clicada para destacá-la visualmente na lista de tarefas 
     }
 
     return li // Retornar o elemento da tarefa criado para ser adicionado à lista de tarefas (ulTarefas) 
@@ -150,3 +159,23 @@ tarefas.forEach(tarefa => {
     const elementoTarefa = criarElementoTarefa(tarefa)
     ulTarefas.append(elementoTarefa)
 })
+
+document.addEventListener('FocoFinalizado', () => { // Adicionar um evento de clique ao botão Cancelar      
+    if (tarefaSelecionada && liTarefaSelecionada) { // Se houver uma tarefa selecionada e um elemento de tarefa selecionado 
+        liTarefaSelecionada.classList.remove('app__section-task-list-item-active') // Remover a classe 'app__section-task-list-item-active' do elemento de tarefa selecionado 
+        liTarefaSelecionada.classList.add('app__section-task-list-item-complete') // Adicionar a classe 'app__section-task-list-item-complete' ao elemento de tarefa selecionado, vai adicionar um fundo verde na tarefa que foi finalizada 
+        liTarefaSelecionada.querySelector('button').setAttribute('disabled', 'disabled') // Desabilitar o botão de edição da tarefa selecionada 
+        tarefaSelecionada.completa = true // Marcar a tarefa selecionada como completa
+        atualizarTarefas() // Atualizar as tarefas no localStorage
+
+    }
+})
+
+btnRemoverConcluidas.onclick = () => {
+    const seletor = ".app__section-task-list-item-complete"
+    document.querySelectorAll(seletor).forEach(elemento => {
+        elemento.remove()
+    })
+    tarefas = tarefas.filter(tarefa => !tarefa.completa)
+    atualizarTarefas()
+}
